@@ -16,17 +16,8 @@
         <div class="main-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2>Statistik Penghitungan Suara</h2>
-                <div style="display: flex; gap: 1rem;">
-                    <button onclick="refreshStats()" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                        🔄 Refresh
-                    </button>
-                    <div id="auto-refresh-status" style="padding: 0.5rem 1rem; background-color: #e8f5e8; border-radius: 6px; font-size: 0.9rem; color: #2e7d32;">
-                        🔴 Auto refresh: OFF
-                    </div>
-                </div>
             </div>
-            
-            <!-- Statistik Utama -->
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                 <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
                     <div id="total-ballots" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">{{ stats.total_ballots or 0 }}</div>
@@ -42,20 +33,8 @@
                     <div id="valid-votes" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">{{ stats.total_valid_votes or 0 }}</div>
                     <div style="font-size: 1.1rem; opacity: 0.9;">Suara Valid</div>
                 </div>
-                
-                <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                    <div id="progress-percentage" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">
-                        {% if stats.total_ballots > 0 %}
-                            {{ "%.1f"|format((stats.processed_ballots / stats.total_ballots * 100)) }}%
-                        {% else %}
-                            0%
-                        {% endif %}
-                    </div>
-                    <div style="font-size: 1.1rem; opacity: 0.9;">Progress</div>
-                </div>
             </div>
-            
-            <!-- Hasil Suara -->
+
             <div class="card">
                 <h3>Hasil Perolehan Suara</h3>
                 
@@ -65,13 +44,13 @@
                     <div style="text-align: center;">
                         <div style="background: linear-gradient(135deg, #1976d2, #42a5f5); color: white; padding: 2rem; border-radius: 16px; margin-bottom: 1rem;">
                             <div style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">🟦</div>
-                            <div id="siA-votes" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">{{ stats.siA_votes or 0 }}</div>
+                            <div id="siA-votes" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">{{ stats.A_votes or 0 }}</div>
                             <div style="font-size: 1.3rem; opacity: 0.9;">Kandidat A</div>
                         </div>
                         <div style="background-color: #e3f2fd; padding: 1rem; border-radius: 12px;">
                             <div id="siA-percentage" style="font-size: 1.5rem; font-weight: bold; color: #1976d2;">
                                 {% if stats.total_valid_votes > 0 %}
-                                    {{ "%.2f"|format((stats.siA_votes / stats.total_valid_votes * 100)) }}%
+                                    {{ "%.2f"|format((stats.A_votes / stats.total_valid_votes * 100)) }}%
                                 {% else %}
                                     0.00%
                                 {% endif %}
@@ -84,13 +63,13 @@
                     <div style="text-align: center;">
                         <div style="background: linear-gradient(135deg, #f57c00, #ffb74d); color: white; padding: 2rem; border-radius: 16px; margin-bottom: 1rem;">
                             <div style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">🟧</div>
-                            <div id="siB-votes" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">{{ stats.siB_votes or 0 }}</div>
+                            <div id="siB-votes" style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">{{ stats.B_votes or 0 }}</div>
                             <div style="font-size: 1.3rem; opacity: 0.9;">Kandidat B</div>
                         </div>
                         <div style="background-color: #fff3e0; padding: 1rem; border-radius: 12px;">
                             <div id="siB-percentage" style="font-size: 1.5rem; font-weight: bold; color: #f57c00;">
                                 {% if stats.total_valid_votes > 0 %}
-                                    {{ "%.2f"|format((stats.siB_votes / stats.total_valid_votes * 100)) }}%
+                                    {{ "%.2f"|format((stats.B_votes / stats.total_valid_votes * 100)) }}%
                                 {% else %}
                                     0.00%
                                 {% endif %}
@@ -103,9 +82,10 @@
                 <!-- Visual Chart -->
                 <div style="margin-top: 2rem;">
                     <h4 style="text-align: center; margin-bottom: 1rem;">Perbandingan Suara</h4>
+                    <h4 style="text-align: center; margin-bottom: 1rem;">Perbandingan Suara</h4>
                     <div style="display: flex; height: 40px; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        {% set siA_width = (stats.siA_votes / stats.total_valid_votes * 100) if stats.total_valid_votes > 0 else 0 %}
-                        {% set siB_width = (stats.siB_votes / stats.total_valid_votes * 100) if stats.total_valid_votes > 0 else 0 %}
+                        {% set siA_width = (stats.A_votes / stats.total_valid_votes * 100) if stats.total_valid_votes > 0 else 0 %}
+                        {% set siB_width = (stats.B_votes / stats.total_valid_votes * 100) if stats.total_valid_votes > 0 else 0 %}
                         
                         <div id="chart-siA" style="background: linear-gradient(90deg, #1976d2, #42a5f5); width: {{ siA_width }}%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; transition: width 0.5s ease;">
                             {% if siA_width > 10 %}{{ "%.1f"|format(siA_width) }}%{% endif %}
@@ -115,12 +95,12 @@
                         </div>
                     </div>
                     
-                    {% if stats.siA_votes != stats.siB_votes %}
+                    {% if stats.A_votes != stats.B_votes %}
                     <div style="text-align: center; margin-top: 1rem; padding: 1rem; background-color: #f0f8ff; border-radius: 12px;">
-                        {% if stats.siA_votes > stats.siB_votes %}
-                            <strong style="color: #1976d2;">🏆 Kandidat A memimpin dengan selisih {{ stats.siA_votes - stats.siB_votes }} suara</strong>
+                        {% if stats.A_votes > stats.B_votes %}
+                            <strong style="color: #1976d2;">🏆 Kandidat A memimpin dengan selisih {{ stats.A_votes - stats.B_votes }} suara</strong>
                         {% else %}
-                            <strong style="color: #f57c00;">🏆 Kandidat B memimpin dengan selisih {{ stats.siB_votes - stats.siA_votes }} suara</strong>
+                            <strong style="color: #f57c00;">🏆 Kandidat B memimpin dengan selisih {{ stats.B_votes - stats.A_votes }} suara</strong>
                         {% endif %}
                     </div>
                     {% else %}
@@ -138,87 +118,6 @@
                 </div>
                 {% endif %}
             </div>
-            
-            <!-- Detail Status -->
-            <div class="card">
-                <h3>Detail Status Pemrosesan</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                    <div style="background-color: #e8f5e8; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #4caf50;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <strong style="color: #2e7d32;">✅ Surat Suara Diproses</strong>
-                            <span id="processed-count" style="font-size: 1.2rem; font-weight: bold; color: #2e7d32;">{{ stats.processed_ballots or 0 }}</span>
-                        </div>
-                        <div style="color: #666; font-size: 0.9rem;">
-                            Surat suara yang telah selesai dianalisa oleh sistem
-                        </div>
-                    </div>
-                    
-                    <div style="background-color: #fff3e0; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #ff9800;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <strong style="color: #f57c00;">⏳ Menunggu Proses</strong>
-                            <span id="pending-count" style="font-size: 1.2rem; font-weight: bold; color: #f57c00;">{{ (stats.total_ballots - stats.processed_ballots) if stats.total_ballots else 0 }}</span>
-                        </div>
-                        <div style="color: #666; font-size: 0.9rem;">
-                            Surat suara yang masuk tapi belum diproses
-                        </div>
-                    </div>
-                    
-                    <div style="background-color: #e3f2fd; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #2196f3;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <strong style="color: #1976d2;">📋 Total Suara Valid</strong>
-                            <span id="valid-count" style="font-size: 1.2rem; font-weight: bold; color: #1976d2;">{{ stats.total_valid_votes or 0 }}</span>
-                        </div>
-                        <div style="color: #666; font-size: 0.9rem;">
-                            Suara yang tercoblos dengan benar (tidak ganda/kosong)
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Progress Bar -->
-            {% if stats.total_ballots > 0 %}
-            <div class="card">
-                <h3>Progress Pemrosesan Real-time</h3>
-                <div style="margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <span>Progress Keseluruhan</span>
-                        <span id="progress-text">{{ stats.processed_ballots }} dari {{ stats.total_ballots }} ({{ "%.1f"|format((stats.processed_ballots / stats.total_ballots * 100)) }}%)</span>
-                    </div>
-                    <div style="background-color: #f0f0f0; border-radius: 10px; overflow: hidden; height: 25px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-                        <div id="progress-bar" style="background: linear-gradient(90deg, #4caf50, #8bc34a); height: 100%; width: {{ (stats.processed_ballots / stats.total_ballots * 100) if stats.total_ballots > 0 else 0 }}%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
-                            {% if (stats.processed_ballots / stats.total_ballots * 100) > 15 %}
-                                {{ "%.1f"|format((stats.processed_ballots / stats.total_ballots * 100)) }}%
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                
-                {% if stats.processed_ballots < stats.total_ballots %}
-                <div style="padding: 1rem; background-color: #e8f4f8; border-radius: 8px; border-left: 4px solid #17a2b8;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 20px; height: 20px; border: 2px solid #17a2b8; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                        <div>
-                            <strong>Sistem sedang memproses surat suara...</strong>
-                            <br><span style="font-size: 0.9rem; color: #666;">Data akan diperbarui secara otomatis</span>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <div style="padding: 1rem; background-color: #d4edda; border-radius: 8px; border-left: 4px solid #28a745; text-align: center;">
-                    <strong style="color: #155724;">🎉 Semua surat suara telah selesai diproses!</strong>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-            
-            <!-- Last Updated -->
-            <div style="text-align: center; margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
-                <span style="color: #666; font-size: 0.9rem;">
-                    Terakhir diperbarui: <span id="last-updated">{{ moment().format('DD/MM/YYYY HH:mm:ss') if moment else 'Sekarang' }}</span>
-                </span>
-            </div>
-        </div>
-    </div>
 
     <style>
         @keyframes spin {
@@ -245,99 +144,4 @@
             }
         }
     </style>
-
-    <script>
-        let autoRefresh = false;
-        let refreshInterval;
-        
-        function refreshStats() {
-            fetch('/api/stats')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error fetching stats:', data.error);
-                        return;
-                    }
-                    
-                    // Update numbers
-                    document.getElementById('total-ballots').textContent = data.total_ballots || 0;
-                    document.getElementById('processed-ballots').textContent = data.processed_ballots || 0;
-                    document.getElementById('valid-votes').textContent = data.total_valid_votes || 0;
-                    document.getElementById('siA-votes').textContent = data.siA_votes || 0;
-                    document.getElementById('siB-votes').textContent = data.siB_votes || 0;
-                    document.getElementById('processed-count').textContent = data.processed_ballots || 0;
-                    document.getElementById('pending-count').textContent = (data.total_ballots - data.processed_ballots) || 0;
-                    document.getElementById('valid-count').textContent = data.total_valid_votes || 0;
-                    
-                    // Update percentages
-                    const progressPercentage = data.total_ballots > 0 ? (data.processed_ballots / data.total_ballots * 100) : 0;
-                    document.getElementById('progress-percentage').textContent = progressPercentage.toFixed(1) + '%';
-                    
-                    if (data.total_valid_votes > 0) {
-                        const siAPercentage = (data.siA_votes / data.total_valid_votes * 100).toFixed(2);
-                        const siBPercentage = (data.siB_votes / data.total_valid_votes * 100).toFixed(2);
-                        
-                        document.getElementById('siA-percentage').textContent = siAPercentage + '%';
-                        document.getElementById('siB-percentage').textContent = siBPercentage + '%';
-                        
-                        // Update chart
-                        const chartSiA = document.getElementById('chart-siA');
-                        const chartSiB = document.getElementById('chart-siB');
-                        
-                        chartSiA.style.width = siAPercentage + '%';
-                        chartSiB.style.width = siBPercentage + '%';
-                        
-                        chartSiA.textContent = siAPercentage > 10 ? siAPercentage + '%' : '';
-                        chartSiB.textContent = siBPercentage > 10 ? siBPercentage + '%' : '';
-                    }
-                    
-                    // Update progress bar
-                    const progressBar = document.getElementById('progress-bar');
-                    const progressText = document.getElementById('progress-text');
-                    if (progressBar && progressText) {
-                        progressBar.style.width = progressPercentage + '%';
-                        progressText.textContent = `${data.processed_ballots} dari ${data.total_ballots} (${progressPercentage.toFixed(1)}%)`;
-                        progressBar.textContent = progressPercentage > 15 ? progressPercentage.toFixed(1) + '%' : '';
-                    }
-                    
-                    // Update timestamp
-                    document.getElementById('last-updated').textContent = new Date().toLocaleString('id-ID');
-                    
-                    console.log('Stats updated successfully');
-                })
-                .catch(error => {
-                    console.error('Error refreshing stats:', error);
-                });
-        }
-        
-        function toggleAutoRefresh() {
-            const statusElement = document.getElementById('auto-refresh-status');
-            
-            if (!autoRefresh) {
-                autoRefresh = true;
-                refreshInterval = setInterval(refreshStats, 5000); // Refresh every 5 seconds
-                statusElement.textContent = '🟢 Auto refresh: ON';
-                statusElement.style.backgroundColor = '#e8f5e8';
-                statusElement.style.color = '#2e7d32';
-            } else {
-                autoRefresh = false;
-                clearInterval(refreshInterval);
-                statusElement.textContent = '🔴 Auto refresh: OFF';
-                statusElement.style.backgroundColor = '#ffebee';
-                statusElement.style.color = '#c62828';
-            }
-        }
-        
-        // Click handler for auto refresh status
-        document.getElementById('auto-refresh-status').addEventListener('click', toggleAutoRefresh);
-        document.getElementById('auto-refresh-status').style.cursor = 'pointer';
-        
-        // Auto start refresh if there are unprocessed ballots
-        const totalBallots = parseInt(document.getElementById('total-ballots').textContent) || 0;
-        const processedBallots = parseInt(document.getElementById('processed-ballots').textContent) || 0;
-        
-        if (totalBallots > processedBallots) {
-            toggleAutoRefresh(); // Start auto refresh
-        }
-    </script>
 {% endblock %}
