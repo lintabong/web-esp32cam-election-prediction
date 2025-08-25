@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Surat Suara - {{ ballot.id }}{% endblock %}
+
+{% block content %}
+    <div class="layout">
+        <div class="sidebar">
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if current_page == 'dashboard' else '' }}">Dashboard</a></li>
+                <li><a href="{{ url_for('statistik') }}" class="{{ 'active' if current_page == 'statistik' else '' }}">Statistik</a></li>
+                <li><a href="{{ url_for('surat_suara') }}" class="{{ 'active' if current_page == 'surat_suara' else '' }}">List Surat Suara</a></li>
+                <li><a href="{{ url_for('logout') }}" class="btn-danger" style="margin-top: 2rem;">Logout</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div style="margin-bottom: 2rem;">
+                <a href="{{ url_for('surat_suara') }}" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    ← Kembali ke List
+                </a>
+            </div>
+            
+            <h2>Detail Surat Suara</h2>
+            <p><strong>ID:</strong> {{ ballot.id }}</p>
+            
+            <div class="card">
+                <h3>Informasi Umum</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <strong>Timestamp:</strong><br>
+                        {% if ballot.timestamp %}
+                            {{ moment(ballot.timestamp * 1000).format('DD/MM/YYYY HH:mm:ss') if moment else 
+                               (ballot.timestamp * 1000) | timestamp }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>Status:</strong><br>
+                        {% if ballot.processed %}
+                            <span style="color: green; font-weight: bold;">✓ Sudah Diproses</span>
+                        {% else %}
+                            <span style="color: orange; font-weight: bold;">⏳ Menunggu Proses</span>
+                        {% endif %}
+                    </div>
+                    {% if ballot.processed and ballot.processed_at %}
+                    <div>
+                        <strong>Diproses Pada:</strong><br>
+                        {{ moment(ballot.processed_at * 1000).format('DD/MM/YYYY HH:mm:ss') if moment else 
+                           (ballot.processed_at * 1000) | timestamp }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if ballot.image_path %}
+            <div class="card">
+                <h3>Gambar Surat Suara</h3>
+                <div style="text-align: center;">
+                    <img src="{{ ballot.image_path }}" 
+                         alt="Surat Suara {{ ballot.id }}" 
+                         style="max-width: 100%; max-height: 600px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if ballot.processed and ballot.result %}
+            <div class="card">
+                <h3>Hasil Analisa</h3>
+                {% if ballot.result.error %}
+                    <div style="padding: 1rem; background-color: #fee; border: 1px solid #fcc; border-radius: 8px; color: #c33;">
+                        <strong>Error:</strong> {{ ballot.result.error }}
+                    </div>
+                {% else %}
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="background-color: #e8f4fd; border: 2px solid #1976d2; padding: 1.5rem; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #1976d2;">{{ ballot.result.siA }}</div>
+                            <div style="color: #1976d2; font-weight: 600;">Suara Kandidat A</div>
+                        </div>
+                        <div class="stat-card" style="background-color: #fff3e0; border: 2px solid #f57c00; padding: 1.5rem; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #f57c00;">{{ ballot.result.siB }}</div>
+                            <div style="color: #f57c00; font-weight: 600;">Suara Kandidat B</div>
+                        </div>
+                        <div class="stat-card" style="background-color: #f3e5f5; border: 2px solid #7b1fa2; padding: 1.5rem; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #7b1fa2;">{{ ballot.result.total_votes }}</div>
+                            <div style="color: #7b1fa2; font-weight: 600;">Total Suara</div>
+                        </div>
+                    </div>
+                    
+                    <h4>Detail Teknis</h4>
+                    <div style="background-color: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace;">
+                        <p><strong>Status:</strong> {{ ballot.result.status }}</p>
+                        {% if ballot.result.left_pixels %}
+                        <p><strong>Pixel Hitam Kiri (Kandidat A):</strong> {{ "{:,}".format(ballot.result.left_pixels) }}</p>
+                        {% endif %}
+                        {% if ballot.result.right_pixels %}
+                        <p><strong>Pixel Hitam Kanan (Kandidat B):</strong> {{ "{:,}".format(ballot.result.right_pixels) }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if ballot.result.siA == 1 and ballot.result.siB == 1 %}
+                    <div style="margin-top: 1rem; padding: 1rem; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; color: #856404;">
+                        <strong>⚠️ Peringatan:</strong> Surat suara ini tercoblos ganda (tidak valid)
+                    </div>
+                    {% elif ballot.result.siA == 0 and ballot.result.siB == 0 %}
+                    <div style="margin-top: 1rem; padding: 1rem; background-color: #f8d7da; border: 1px solid #f1aeb5; border-radius: 8px; color: #721c24;">
+                        <strong>⚠️ Peringatan:</strong> Tidak ada coblosan terdeteksi (surat suara kosong)
+                    </div>
+                    {% else %}
+                    <div style="margin-top: 1rem; padding: 1rem; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+                        <strong>✓ Valid:</strong> Surat suara tercoblos dengan benar
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if not ballot.processed %}
+            <div class="card">
+                <h3>Status Pemrosesan</h3>
+                <div style="padding: 1rem; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; color: #856404;">
+                    <strong>ℹ️ Info:</strong> Surat suara ini belum diproses. Sistem akan otomatis memproses gambar yang masuk.
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 2s linear infinite;"></div>
+                    <p style="margin-top: 1rem;">Menunggu pemrosesan...</p>
+                </div>
+            </div>
+            
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+            
+            <script>
+                // Auto refresh jika belum diproses
+                setTimeout(function() {
+                    location.reload();
+                }, 5000);
+            </script>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

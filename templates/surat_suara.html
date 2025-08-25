@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}List Surat Suara - Penghitung Surat Suara{% endblock %}
+
+{% block content %}
+    <div class="layout">
+        <div class="sidebar">
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if current_page == 'dashboard' else '' }}">Dashboard</a></li>
+                <li><a href="{{ url_for('statistik') }}" class="{{ 'active' if current_page == 'statistik' else '' }}">Statistik</a></li>
+                <li><a href="{{ url_for('surat_suara') }}" class="{{ 'active' if current_page == 'surat_suara' else '' }}">List Surat Suara</a></li>
+                <li><a href="{{ url_for('logout') }}" class="btn-danger" style="margin-top: 2rem;">Logout</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>List Surat Suara</h2>
+                <button onclick="location.reload()" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    🔄 Refresh
+                </button>
+            </div>
+            
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Ringkasan</h3>
+                    <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
+                        <span style="color: #666;">Total: <strong>{{ ballots|length }}</strong></span>
+                        <span style="color: #28a745;">Diproses: <strong>{{ ballots|selectattr('processed')|list|length }}</strong></span>
+                        <span style="color: #ffc107;">Menunggu: <strong>{{ ballots|rejectattr('processed')|list|length }}</strong></span>
+                    </div>
+                </div>
+                
+                {% if ballots|length == 0 %}
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <p>Belum ada surat suara yang masuk.</p>
+                    <p style="font-size: 0.9rem;">Sistem akan otomatis menampilkan surat suara baru yang masuk ke Firebase.</p>
+                </div>
+                {% else %}
+                <div class="table-container" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 1rem; text-align: left; border-right: 1px solid #dee2e6;">ID Surat Suara</th>
+                                <th style="padding: 1rem; text-align: left; border-right: 1px solid #dee2e6;">Waktu Masuk</th>
+                                <th style="padding: 1rem; text-align: center; border-right: 1px solid #dee2e6;">Status</th>
+                                <th style="padding: 1rem; text-align: center; border-right: 1px solid #dee2e6;">Kandidat A</th>
+                                <th style="padding: 1rem; text-align: center; border-right: 1px solid #dee2e6;">Kandidat B</th>
+                                <th style="padding: 1rem; text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ballot in ballots %}
+                            <tr style="border-bottom: 1px solid #dee2e6; {% if not ballot.processed %}background-color: #fff3cd;{% endif %}">
+                                <!-- ID -->
+                                <td style="padding: 1rem; border-right: 1px solid #dee2e6; font-family: monospace; font-size: 0.9rem;">
+                                    {{ ballot.id }}
+                                </td>
+
+                                <!-- Created At -->
+                                <td style="padding: 1rem; border-right: 1px solid #dee2e6;">
+                                    {{ ballot.created_at.strftime('%d/%m/%y %H:%M') }}
+                                </td>
+
+                                <!-- Status -->
+                                <td style="padding: 1rem; border-right: 1px solid #dee2e6; text-align: center;">
+                                    {% if ballot.processed %}
+                                        <span style="color: #28a745; font-weight: bold;">✓ Selesai</span>
+                                    {% else %}
+                                        <span style="color: #ffc107; font-weight: bold;">⏳ Proses</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Hasil Kandidat -->
+
+                                <td style="padding: 1rem; border-right: 1px solid #dee2e6; text-align: center;">
+                                    <span>{% if ballot.result_dict.siA == 1 %}✓{% else %}-{% endif %}</span>
+                                </td>
+
+                                <td style="padding: 1rem; border-right: 1px solid #dee2e6; text-align: center;">
+                                    <span>{% if ballot.result_dict.siB == 1 %}✓{% else %}-{% endif %}</span>
+                                </td>
+
+                                <!-- Detail -->
+                                <td style="padding: 1rem; border-right: 1px solid #dee2e6; text-align: center;">
+                                    <a href="{{ url_for('detail_surat_suara', ballot_id=ballot.id) }}" 
+                                    class="btn" 
+                                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                        👁️ Detail
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if ballots|rejectattr('processed')|list|length > 0 %}
+            <div class="card">
+                <h3>Status Pemrosesan</h3>
+                <div style="padding: 1rem; background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 8px; color: #0d47a1;">
+                    <strong>ℹ️ Info:</strong> Ada {{ ballots|rejectattr('processed')|list|length }} surat suara yang sedang dalam antrian pemrosesan.
+                    Sistem akan otomatis memproses gambar yang masuk secara real-time.
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div style="background-color: #f0f0f0; border-radius: 10px; overflow: hidden; height: 20px;">
+                        {% set total = ballots|length %}
+                        {% set processed = ballots|selectattr('processed')|list|length %}
+                        {% set progress = (processed / total * 100) if total > 0 else 0 %}
+                        <div style="background-color: #4caf50; height: 100%; width: {{ progress }}%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem;">
+                        Progress: {{ processed }} dari {{ total }} ({{ "%.1f"|format(progress) }}%)
+                    </p>
+                </div>
+            </div>
+            
+            <script>
+                // Auto refresh setiap 10 detik jika masih ada yang belum diproses
+                let unprocessedCount = {{ ballots|rejectattr('processed')|list|length }};
+                if (unprocessedCount > 0) {
+                    setTimeout(function() {
+                        location.reload();
+                    }, 10000);
+                }
+            </script>
+            {% endif %}
+        </div>
+    </div>
+
+    <style>
+        .table-container {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        table {
+            background: white;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9fa !important;
+        }
+        
+        @media (max-width: 768px) {
+            .table-container {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 0.5rem !important;
+            }
+        }
+    </style>
+{% endblock %}

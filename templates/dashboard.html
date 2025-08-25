@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Penghitung Surat Suara{% endblock %}
+
+{% block content %}
+    <div class="layout">
+        <div class="sidebar">
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if current_page == 'dashboard' else '' }}">Dashboard</a></li>
+                <li><a href="{{ url_for('statistik') }}" class="{{ 'active' if current_page == 'statistik' else '' }}">Statistik</a></li>
+                <li><a href="{{ url_for('surat_suara') }}" class="{{ 'active' if current_page == 'surat_suara' else '' }}">List Surat Suara</a></li>
+                <li><a href="{{ url_for('logout') }}" class="btn-danger" style="margin-top: 2rem;">Logout</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <h2>Dashboard</h2>
+            <p>Selamat datang di sistem penghitung surat suara coblosan.</p>
+            
+            <div class="card" style="margin-top: 2rem;">
+                <h3>Informasi Sistem</h3>
+                <p><strong>Status:</strong> Aktif dan siap memproses surat suara</p>
+                <p><strong>User:</strong> {{ session.user }}</p>
+                <p><strong>Tipe:</strong> {{ session.user_type|title }}</p>
+            </div>
+            
+            <div class="card">
+                <h3>Menu Tersedia</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <a href="{{ url_for('statistik') }}" class="btn" style="padding: 1rem; text-align: center;">
+                        📊 Lihat Statistik
+                    </a>
+                    <a href="{{ url_for('surat_suara') }}" class="btn" style="padding: 1rem; text-align: center;">
+                        📋 List Surat Suara
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Cara Kerja Sistem</h3>
+                <ol style="margin-left: 1.5rem; line-height: 1.6;">
+                    <li>Sistem mendengarkan data baru di Firebase Realtime Database</li>
+                    <li>Ketika ada surat suara baru, sistem mengunduh gambar dari Firebase Storage</li>
+                    <li>OpenCV menganalisa gambar untuk mendeteksi coblosan</li>
+                    <li>Hasil analisa disimpan kembali ke database</li>
+                    <li>Statistik diperbarui secara otomatis</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,7 @@
+.venv
+.vscode
+
+__pycache__
+example*.py
+.env
+firestore*.json
