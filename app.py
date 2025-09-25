@@ -228,8 +228,6 @@ def start_firebase_listener():
     return listener_thread
 
 if __name__ == '__main__':
-    start_firebase_listener()
-
     app.run(
         debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true',
         host=os.getenv('APPLICATION_HOST'),

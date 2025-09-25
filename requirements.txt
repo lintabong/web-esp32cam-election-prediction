@@ -1,4 +1,5 @@
 Flask==2.3.3
+google-genai==1.27.0
 opencv-python==4.8.1.78
 pyrebase4==4.7.1
 python-dotenv==1.0.0

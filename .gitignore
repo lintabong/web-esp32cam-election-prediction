@@ -5,3 +5,6 @@ __pycache__
 example*.py
 .env
 firestore*.json
+
+.pio
+downloads
