@@ -27,3 +27,22 @@ Aplikasi ini mendukung login, dashboard, statistik hasil voting, serta detail pe
 
 ---
 
+---
+
+## 📡 Alur Proses
+- ESP32CAM mengunggah foto ke Firebase Storage.
+- Realtime Database men-trigger listener.py.
+- Listener mengunduh gambar ke folder downloads/.
+- Fungsi analyze_ballot() memproses gambar dengan OpenCV + Gemini API.
+- Hasil perhitungan disimpan ke Firestore.
+- Flask app menampilkan data di dashboard & API.
+---
+
+## How to Run
+```
+python app.py
+```
+
+```
+python listener.py
+```
