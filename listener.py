@@ -1,5 +1,6 @@
 
 import os
+import re
 import cv2
 import shutil
 import pyrebase
@@ -9,7 +10,7 @@ from google.genai import types
 from google import genai
 from google.cloud import firestore
 
-load_dotenv()
+load_dotenv('.env')
 
 # --- Firebase Config ---
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.getenv('PATH_TO_FIRESTORE')
@@ -34,6 +35,10 @@ firebase = pyrebase.initialize_app(firebase_config)
 firebase_db = firebase.database()
 firestore_db = firestore.Client()
 storage = firebase.storage()
+
+os.environ['GEMINI_API_KEY'] = GEMINI_API_KEY
+
+client = genai.Client()
 
 # --- 
 
@@ -63,27 +68,26 @@ def analyze_ballot(local_path):
         ratio = cv2.countNonZero(roi_thresh) / float(w * h)
         results.append([cand["name"], ratio, (x, y, w, h)])
 
-    os.environ['GEMINI_API_KEY'] = GEMINI_API_KEY
+    try:
+        with open(local_path, 'rb') as f:
+            image_bytes = f.read()
 
-    client = genai.Client()
-
-    with open(local_path, 'rb') as f:
-        image_bytes = f.read()
-
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=[
-            types.Part.from_bytes(
-            data=image_bytes,
-            mime_type='image/jpeg',),
-            'Who is choosen? 01 or 02? answer with 1/2'
-        ]
-    )
-
-    if int(response.text) == 1:
-        results[0][1] = 0.6
-    else:
-        results[1][1] = 0.6
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[
+                types.Part.from_bytes(
+                data=image_bytes,
+                mime_type='image/jpeg',),
+                'guess who was choosen? 01 or 02? only answer with number (1 or 2)'
+            ]
+        )    
+        if int(response.text) == 1:
+            results[0][1] = 0.6
+        else:
+            results[1][1] = 0.6
+    except Exception as error:
+        # results[0][1] = 0.6
+        print(error)
 
     if results[0][1] > results[1][1]:
         winner = "1"
@@ -110,7 +114,7 @@ def analyze_ballot(local_path):
 
     doc_ref.set({
         "created_at": datetime.utcnow(),   # timestamp
-        "image_path": str(local_path).replace('downloads\\', ''),            # string
+        "image_path": str(local_path).replace('downloads\\', '').replace('jpg', 'jp'),            # string
         "is_valid": True,                  # boolean
         "processed": True,                 # boolean
         "result": results                  # array of maps
@@ -130,6 +134,9 @@ def stream_handler(message):
     if isinstance(data, dict):
         first_key = next(iter(data))
         filename = data[first_key] 
+        print('no regex',filename)
+        
+        filename = str(filename).replace(r'jpg', 'jp')
         print(filename)
 
         remote_path = f"{folder}/{filename}"
@@ -138,14 +145,29 @@ def stream_handler(message):
 
         storage.child(remote_path).download(os.path.join(download_dir, filename), filename)
 
-        shutil.copy(f'{filename}', os.path.join("downloads", filename))
+        shutil.copy(f'{filename}', os.path.join("downloads", str(filename).replace(r'jp', 'jpg')))
 
         analyze_ballot(os.path.join("downloads", filename))
 
         os.remove(filename)
 
+    elif re.search(r'\.jpg', data):
+        filename = str(data).replace(r'jpg', 'jp')
+        print(filename)
+
+        remote_path = f"{folder}/{filename}"
+        download_dir = os.path.join(os.getcwd(), "downloads")
+        os.makedirs(download_dir, exist_ok=True)
+
+        storage.child(remote_path).download(os.path.join(download_dir, filename), filename)
+
+        shutil.copy(f'{filename}', os.path.join("downloads", str(filename).replace(r'jp', 'jpg')))
+
+        analyze_ballot(os.path.join("downloads", str(filename).replace(r'jp', 'jpg')))
+
+        os.remove(filename)
     else:
-        print(data)
+        pass
 
 
 # --- Start listening ---
