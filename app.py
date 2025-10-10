@@ -16,7 +16,7 @@ warnings.filterwarnings(
     message='pkg_resources is deprecated as an API.*'
 )
 
-load_dotenv()
+load_dotenv('.env')
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
